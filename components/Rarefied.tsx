@@ -145,7 +145,7 @@ const verdictFor = (p: number) => {
 
 export default function Rarefied() {
   const [region, setRegion] = useState("AU");
-  const [step, setStep] = useState<"input" | "results" | "truth">("input");
+  const [step, setStep] = useState<"input" | "results">("input");
   const [generating, setGenerating] = useState(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
 
@@ -188,17 +188,17 @@ export default function Rarefied() {
   const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
 
   const breakdown = [
-    { key: "income", name: "Income", value: results.income, hint: region === "AU" ? "AU males" : "Global" },
-    { key: "wealth", name: "Net wealth", value: results.wealth, hint: `Age ${form.age}` },
-    { key: "height", name: "Height", value: results.height, hint: `${form.height}cm` },
-    { key: "languages", name: "Languages", value: results.languages, hint: `${form.languages} spoken` },
-    { key: "marital", name: "Partnership", value: results.marital, hint: form.marital },
-    { key: "kids", name: "Children", value: results.kids, hint: `${form.kids} kids` },
-    { key: "bench", name: "Bench press", value: results.bench, hint: `${(form.bench/form.bodyweight).toFixed(2)}× BW` },
-    { key: "squat", name: "Squat", value: results.squat, hint: `${(form.squat/form.bodyweight).toFixed(2)}× BW` },
-    { key: "deadlift", name: "Deadlift", value: results.deadlift, hint: `${(form.deadlift/form.bodyweight).toFixed(2)}× BW` },
-    { key: "fivek", name: "5km run", value: results.fivek, hint: formatSec(form.fivek) },
-    { key: "sex", name: "Bedroom frequency", value: results.sex, hint: `${form.sexWeekly}× per week` },
+    { key: "income", name: "Income", value: results.income, hint: region === "AU" ? "AU males" : "Global", source: region === "AU" ? "ATO 2022-23 / ABS Aug 2025" : "World Bank PIP" },
+    { key: "wealth", name: "Net wealth", value: results.wealth, hint: `Age ${form.age}`, source: region === "AU" ? "ABS SIH 2021-22" : "Credit Suisse GWR" },
+    { key: "height", name: "Height", value: results.height, hint: `${form.height}cm`, source: region === "AU" ? "ABS NHS" : "NCD-RisC" },
+    { key: "languages", name: "Languages", value: results.languages, hint: `${form.languages} spoken`, source: "Eurobarometer / Census" },
+    { key: "marital", name: "Partnership", value: results.marital, hint: form.marital, source: "ABS Marriages & Divorces" },
+    { key: "kids", name: "Children", value: results.kids, hint: `${form.kids} kids`, source: "ABS Births / Census" },
+    { key: "bench", name: "Bench press", value: results.bench, hint: `${(form.bench/form.bodyweight).toFixed(2)}× BW`, source: "van den Hoek 2024 (n=809k)" },
+    { key: "squat", name: "Squat", value: results.squat, hint: `${(form.squat/form.bodyweight).toFixed(2)}× BW`, source: "van den Hoek 2024 (n=809k)" },
+    { key: "deadlift", name: "Deadlift", value: results.deadlift, hint: `${(form.deadlift/form.bodyweight).toFixed(2)}× BW`, source: "van den Hoek 2024 (n=809k)" },
+    { key: "fivek", name: "5km run", value: results.fivek, hint: formatSec(form.fivek), source: "Cooper Institute / race data" },
+    { key: "sex", name: "Bedroom frequency", value: results.sex, hint: `${form.sexWeekly}× per week`, source: "Natsal-3 / GSS" },
   ];
 
   const handleShare = async () => {
@@ -275,10 +275,26 @@ export default function Rarefied() {
     .verdict-text { font-family: 'Cormorant Garamond'; font-style: italic; font-size: 19px; line-height: 1.4; color: #e8e3d8; max-width: 380px; margin: 0 auto; }
     .breakdown-row { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(180,140,70,0.12); }
     .breakdown-name { font-family: 'Cormorant Garamond'; font-size: 18px; }
+    .breakdown-meta { font-family: 'JetBrains Mono'; font-size: 10px; color: #5a5347; margin-top: 4px; letter-spacing: 0.08em; }
+    .breakdown-source { color: #b48c46; }
     .breakdown-pct { font-family: 'JetBrains Mono'; font-size: 13px; color: #d4a464; min-width: 56px; text-align: right; }
     .breakdown-tag { font-family: 'JetBrains Mono'; font-size: 9px; letter-spacing: 0.2em; color: #5a5347; text-transform: uppercase; min-width: 90px; text-align: right; }
     .breakdown-bar { grid-column: 1 / -1; height: 2px; background: rgba(180,140,70,0.1); margin-top: 8px; position: relative; }
     .breakdown-bar-fill { height: 100%; background: linear-gradient(90deg, #b48c46, #d4a464); }
+
+    /* Scroll cue — animated nudge after the score */
+    .scroll-cue { text-align: center; margin: 20px 0 32px; }
+    .scroll-cue-line { width: 1px; height: 32px; background: linear-gradient(180deg, transparent, #b48c46); margin: 0 auto 12px; animation: pulseLine 2s ease-in-out infinite; }
+    .scroll-cue-text { font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.4em; color: #b48c46; text-transform: uppercase; }
+    .scroll-cue-arrow { font-family: 'JetBrains Mono'; font-size: 18px; color: #d4a464; margin-top: 8px; animation: bounceArrow 2s ease-in-out infinite; }
+    @keyframes pulseLine { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    @keyframes bounceArrow { 0%, 100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(6px); opacity: 1; } }
+
+    /* Methodology card — addresses "where's this data from" */
+    .methodology-card { padding: 24px 22px; border: 1px solid rgba(180,140,70,0.25); background: rgba(180,140,70,0.03); margin-bottom: 32px; }
+    .meth-label { font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.4em; color: #b48c46; text-transform: uppercase; margin-bottom: 12px; }
+    .meth-text { font-family: 'Cormorant Garamond'; font-size: 16px; line-height: 1.55; color: #c8c1b3; }
+    .meth-text em { color: #d4a464; font-style: italic; }
     .restart-btn { width: 100%; padding: 14px; margin-top: 14px; background: transparent; border: 1px solid rgba(180,140,70,0.3); color: #b48c46; font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer; }
     .restart-btn:hover { border-color: #d4a464; color: #d4a464; }
     .share-btn { width: 100%; padding: 18px; margin-top: 24px; background: transparent; border: 1px solid #d4a464; color: #d4a464; font-family: 'JetBrains Mono'; font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600; cursor: pointer; transition: all 0.3s; }
@@ -475,6 +491,7 @@ export default function Rarefied() {
 
           {step === "results" && (
             <>
+              {/* THE NUMBER — the dopamine hit */}
               <div className="verdict-card">
                 <div className="composite-label">Composite Percentile</div>
                 <div className="composite-num">{Math.round(results.composite)}<span>%</span></div>
@@ -483,13 +500,31 @@ export default function Rarefied() {
                 <p className="verdict-text">"{verdictFor(results.composite)}"</p>
               </div>
 
+              {/* SCROLL CUE — invites continued reading */}
+              <div className="scroll-cue">
+                <div className="scroll-cue-line" />
+                <div className="scroll-cue-text">Keep scrolling</div>
+                <div className="scroll-cue-arrow">↓</div>
+              </div>
+
+              {/* METHODOLOGY NOTE — addresses "where's this data from" */}
+              <div className="methodology-card">
+                <div className="meth-label">A note on the data</div>
+                <p className="meth-text">
+                  Every percentile is anchored in real public research — Australian Bureau of Statistics, Australian Tax Office, peer-reviewed studies (n=809,986 for the lifts), Natsal-3 for sexual frequency, NCD-RisC for global height. Sources cited per metric below.
+                </p>
+                <p className="meth-text" style={{marginTop: 12}}>
+                  Numbers are interpolated for smoothness. <em>Directionally accurate, not surgically precise.</em>
+                </p>
+              </div>
+
               <div className="section-label"><span>The Breakdown</span><span>BY METRIC</span></div>
 
               {breakdown.filter((b) => b.value != null).map((b) => (
                 <div key={b.key} className="breakdown-row">
                   <div>
                     <div className="breakdown-name">{b.name}</div>
-                    <div style={{fontFamily:'JetBrains Mono', fontSize:10, color:'#5a5347', marginTop:2, letterSpacing:'0.1em'}}>{b.hint}</div>
+                    <div className="breakdown-meta">{b.hint} · <span className="breakdown-source">{b.source}</span></div>
                   </div>
                   <div className="breakdown-pct">{b.value.toFixed(0)}%</div>
                   <div className="breakdown-tag">{labelFor(b.value)}</div>
@@ -497,19 +532,7 @@ export default function Rarefied() {
                 </div>
               ))}
 
-              <button className="share-btn" onClick={() => setStep("truth")}>
-                Continue ↓
-              </button>
-              <button className="restart-btn" onClick={() => setStep("input")}>← Adjust Particulars</button>
-
-              <p className="footer-note">
-                Rarefied is a piece of fun. Percentiles are interpolated from public datasets — directionally true, not surgically precise.
-              </p>
-            </>
-          )}
-
-          {step === "truth" && (
-            <>
+              {/* THE TRUTH — flows directly underneath the breakdown */}
               <div className="truth-eyebrow">A Final Word</div>
               <div className="truth-divider">◆</div>
 
@@ -552,7 +575,7 @@ export default function Rarefied() {
               <button className="share-btn" onClick={handleShare} disabled={generating} style={{marginTop: 48}}>
                 {generating ? "Generating..." : "Share This With a Mate ↗"}
               </button>
-              <button className="restart-btn" onClick={() => { setStep("input"); }}>← Start Over</button>
+              <button className="restart-btn" onClick={() => setStep("input")}>← Adjust Particulars</button>
 
               <p className="footer-note" style={{marginTop: 24}}>
                 If this landed, send it to a man you love. He'll get the same gotcha. That's the point.
