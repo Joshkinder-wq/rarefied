@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Rarefied — An Index of Rarity",
@@ -19,7 +20,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, background: "#0a0908" }}>{children}</body>
+      <body style={{ margin: 0, padding: 0, background: "#0a0908" }}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
